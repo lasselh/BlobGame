@@ -629,10 +629,10 @@ PlayerSettings:
     m_VersionCode: 1
     m_VersionName: 
   apiCompatibilityLevel: 6
-  cloudProjectId: 
+  cloudProjectId: aa9865f9-e49e-4f7e-b809-7990a8355980
   framebufferDepthMemorylessMode: 0
-  projectName: 
-  organizationId: 
+  projectName: BlobGame
+  organizationId: lass1
   cloudEnabled: 0
   enableNativePlatformBackendsForNewInputSystem: 0
   disableOldInputManagerSupport: 0
