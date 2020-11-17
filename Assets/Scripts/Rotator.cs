@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Rotator : MonoBehaviour
 {
-
+    // Rotates the sprites of Mad and PowerUps
     // Update is called once per frame
     void Update()
     {
