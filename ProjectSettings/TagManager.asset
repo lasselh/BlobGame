@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Mad
   - PowerUp - Size
+  - PowerUp - Speed
   layers:
   - Default
   - TransparentFX
