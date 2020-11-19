@@ -51,11 +51,12 @@ public class PlayerController : NetworkBehaviour
         }
 
         Collision(other.gameObject);
-        if (isServer)
+        if (isServer == true)
         {
-            RpcCollision(other.gameObject);
+            CmdCollision(other.gameObject);
+            //RpcCollision(other.gameObject);
         }
-        else if (isClient)
+        else if (isClient && isServer == false)
         {
             CmdCollision(other.gameObject);
         }
@@ -125,6 +126,13 @@ public class PlayerController : NetworkBehaviour
                 maxSpeed /= 2;
                 speed /= 2;
             }));
+        }
+
+        RpcCollision(other);
+
+        if (isServer == true)
+        {
+            gameObject.transform.localScale -= new Vector3(0.01f, 0.01f, 0f);
         }
     }
 
