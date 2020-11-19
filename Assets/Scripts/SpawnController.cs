@@ -9,7 +9,6 @@ using UnityEngine.SceneManagement;
 using UnityEngine.SocialPlatforms.Impl;
 using Random = UnityEngine.Random;
 
-
 public class SpawnController : NetworkBehaviour
 {
     public GameObject mad;
@@ -19,6 +18,7 @@ public class SpawnController : NetworkBehaviour
     public GameObject powerUpSize;
     public GameObject powerUpSpeed;
 
+    // Start is called before the first frame update
     void Start()
     {
         PowerUpList.Add(powerUpSize);
@@ -33,11 +33,6 @@ public class SpawnController : NetworkBehaviour
 
         StartCoroutine(SpawnMadRandomly());
         StartCoroutine(SpawnPowerUpRandomly());
-    }
-
-    void Update()
-    {
-
     }
 
     // Spawns an amount of Mad at random locations on the map every x seconds

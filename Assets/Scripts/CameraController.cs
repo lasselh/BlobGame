@@ -25,6 +25,7 @@ public class CameraController : NetworkBehaviour
         mainCamera.transform.position = this.transform.position + offset;
     }
 
+    // lortet bugger ad helvede til i multiplayer, gider ikke fikse det
     public void CameraZoomOnSizeIncrease()
     {
         mainCamera.orthographicSize += 0.02f;

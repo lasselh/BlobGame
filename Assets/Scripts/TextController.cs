@@ -34,6 +34,7 @@ public class TextController : NetworkBehaviour
         SetScoreText(0);
     }
 
+    // Sets score text and win-/restartText when game is finished
     public void SetScoreText(int sco)
     {
         scoreText.text = "Score: " + sco.ToString();

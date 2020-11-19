@@ -18,7 +18,7 @@ public class PlayerController : NetworkBehaviour
 
     // Private variables
     private Rigidbody2D rb2d;
-    public int score { get; set; }
+    private int score;
 
     // Power up variables
     // Power up - Size
@@ -26,11 +26,13 @@ public class PlayerController : NetworkBehaviour
     // Power up - Speed
     private float powerUpSpeedIncrease = 2;
 
+    // Called once when script starts
     void Start()
     {
         rb2d = GetComponent<Rigidbody2D>();
     }
 
+    // FixedUpdate is called exactly 50 times a second, used for physics (movement)
     void FixedUpdate()
     {
         if (!isLocalPlayer)
@@ -40,7 +42,7 @@ public class PlayerController : NetworkBehaviour
         PlayerMovement();
     }
 
-    // Handles what happens when player collides with other objects
+    // Handles what happens when player collides with other objects (Mad, PowerUps, walls, etc...)
     void OnTriggerEnter2D(Collider2D other)
     {
         if (!isLocalPlayer)
@@ -59,19 +61,43 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
+    // Handles collisions between 2 players
     void OnCollisionEnter2D(Collision2D other)
     {
         Vector3 thisSize = this.gameObject.transform.localScale;
         Vector3 otherSize = other.gameObject.transform.localScale;
 
-        //float thisCompareSize = thisSize.
-
         if (thisSize.magnitude > otherSize.magnitude)
         {
-            //GetComponent<TextController>().SetScoreText(1234);
             Destroy(other.gameObject);
             gameObject.transform.localScale += new Vector3(0.1f, 0.1f, 0f);
+            score += 10;
+            GetComponent<TextController>().SetScoreText(score);
+            if (isServer)
+            {
+                RpcPlayerCollision(other.gameObject);
+            }
+            else if (isClient)
+            {
+                CmdPlayerCollision(other.gameObject);
+            }
         }
+    }
+
+    // Sends a command from player objects on the client to player objects on the server about player collision
+    [Command]
+    void CmdPlayerCollision(GameObject other)
+    {
+        Destroy(other);
+        gameObject.transform.localScale += new Vector3(0.1f, 0.1f, 0f);
+    }
+
+    // Sends a ClientRpc from player objects on the server to player objects on the client about player collision
+    [ClientRpc]
+    void RpcPlayerCollision(GameObject other)
+    {
+        Destroy(other);
+        gameObject.transform.localScale += new Vector3(0.1f, 0.1f, 0f);
     }
 
     // Sends a command from player objects on the client to player objects on the server about collision
@@ -196,6 +222,8 @@ public class PlayerController : NetworkBehaviour
         {
             rb2d.velocity = Vector3.ClampMagnitude(rb2d.velocity, maxSpeed);
         }
+
+        // Stops player instantly after not pressing any movement keys (WASD or arrows)
         if(movement == new Vector2(0, 0))
             rb2d.velocity = new Vector2(0,0);
     }
@@ -206,9 +234,6 @@ public class PlayerController : NetworkBehaviour
         yield return new WaitForSeconds(time);
         task();
     }
-
-
-
 
     //GetComponent<TextController>().SetScoreText(score);
     // Runs even if TimeScale = 0 (Game paused), checks if player wants to restart/close game when finished
