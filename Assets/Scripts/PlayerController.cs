@@ -4,47 +4,184 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using UnityEngine.UI;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 using UnityEngine.SocialPlatforms.Impl;
+using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : NetworkBehaviour
 {
     // Public variables
     public float speed;
     public float maxSpeed;
-    public Text scoreText;
-    public Text winText;
-    public Text RestartText;
-    public Camera camera;
-    public float cameraSize;
 
     // Private variables
     private Rigidbody2D rb2d;
-    private int score = 0;
-    private int winScore = 30;
+    public int score { get; set; }
 
     // Power up variables
     // Power up - Size
     private Vector3 powerUpSizeIncrease = new Vector3(0.1f, 0.1f, 0);
-    public Text PowerUpSizeText;
     // Power up - Speed
     private float powerUpSpeedIncrease = 2;
-    public Text PowerUpSpeedText;
 
     void Start()
     {
         rb2d = GetComponent<Rigidbody2D>();
-        camera.orthographicSize = cameraSize;
-
-        SetScoreText();
-        PowerUpSizeText.text = "";
-        PowerUpSpeedText.text = "";
-        winText.text = "";
-        RestartText.text = "";
     }
 
     void FixedUpdate()
+    {
+        if (!isLocalPlayer)
+        {
+            return;
+        }
+        PlayerMovement();
+    }
+
+    // Handles what happens when player collides with other objects
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (!isLocalPlayer)
+        {
+            return;
+        }
+
+        Collision(other.gameObject);
+        if (isServer)
+        {
+            RpcCollision(other.gameObject);
+        }
+        else if (isClient)
+        {
+            CmdCollision(other.gameObject);
+        }
+    }
+
+    void OnCollisionEnter2D(Collision2D other)
+    {
+        Vector3 thisSize = this.gameObject.transform.localScale;
+        Vector3 otherSize = other.gameObject.transform.localScale;
+
+        //float thisCompareSize = thisSize.
+
+        if (thisSize.magnitude > otherSize.magnitude)
+        {
+            //GetComponent<TextController>().SetScoreText(1234);
+            Destroy(other.gameObject);
+            gameObject.transform.localScale += new Vector3(0.1f, 0.1f, 0f);
+        }
+    }
+
+    // Sends a command from player objects on the client to player objects on the server about collision
+    [Command]
+    void CmdCollision(GameObject other)
+    {
+        if (other.gameObject.CompareTag("Mad"))
+        {
+            Destroy(other.gameObject);
+            gameObject.transform.localScale += new Vector3(0.01f, 0.01f, 0f);
+        }
+        else if (other.gameObject.CompareTag("PowerUp - Size"))
+        {
+            Destroy(other.gameObject);
+            gameObject.transform.localScale += powerUpSizeIncrease;
+            StartCoroutine(ExecuteAfterTime((5), () => { gameObject.transform.localScale -= powerUpSizeIncrease; }));
+        }
+        else if (other.gameObject.CompareTag("PowerUp - Speed"))
+        {
+            Destroy(other.gameObject);
+            maxSpeed *= powerUpSpeedIncrease;
+            speed *= powerUpSpeedIncrease;
+            StartCoroutine(ExecuteAfterTime((5), () =>
+            {
+                maxSpeed /= 2;
+                speed /= 2;
+            }));
+        }
+    }
+
+    // Sends a ClientRpc from player objects on the server to player objects on the client about collision
+    [ClientRpc]
+    void RpcCollision(GameObject other)
+    {
+        if (other.gameObject.CompareTag("Mad"))
+        {
+            Destroy(other.gameObject);
+            gameObject.transform.localScale += new Vector3(0.01f, 0.01f, 0f);
+        }
+        else if (other.gameObject.CompareTag("PowerUp - Size"))
+        {
+            Destroy(other.gameObject);
+            gameObject.transform.localScale += powerUpSizeIncrease;
+            StartCoroutine(ExecuteAfterTime((5), () => { gameObject.transform.localScale -= powerUpSizeIncrease; }));
+        }
+        else if (other.gameObject.CompareTag("PowerUp - Speed"))
+        {
+            Destroy(other.gameObject);
+            maxSpeed *= powerUpSpeedIncrease;
+            speed *= powerUpSpeedIncrease;
+            StartCoroutine(ExecuteAfterTime((5), () =>
+            {
+                maxSpeed /= 2;
+                speed /= 2;
+            }));
+        }
+    }
+
+    // Handles collisions between player and other objects and writes the UI
+    void Collision(GameObject other)
+    {
+        if (other.gameObject.CompareTag("Mad"))
+        {
+            // Removes the object collided with (Mad)
+            Destroy(other.gameObject);
+
+            // Increments size of player
+            gameObject.transform.localScale += new Vector3(0.01f, 0.01f, 0f);
+
+            score++;
+            GetComponent<TextController>().SetScoreText(score);
+        }
+        else if (other.gameObject.CompareTag("PowerUp - Size"))
+        {
+            // Removes the object collided with (Power Up)
+            Destroy(other.gameObject);
+
+            // Temporarily increases the size of the player
+            gameObject.transform.localScale += powerUpSizeIncrease;
+            GetComponent<TextController>().powerUpSizeText.text = "du fik en size powerup";
+
+            // Starts a coroutine, which executes after 5 seconds, reducing the players size again
+            StartCoroutine(ExecuteAfterTime((5), () =>
+            {
+                gameObject.transform.localScale -= powerUpSizeIncrease;
+                GetComponent<TextController>().powerUpSizeText.text = "";
+            }));
+        }
+        else if (other.gameObject.CompareTag("PowerUp - Speed"))
+        {
+            // Removes the object collided with (Power Up)
+            Destroy(other.gameObject);
+
+            // Temporarily increases the speed of the player
+            maxSpeed *= powerUpSpeedIncrease;
+            speed *= powerUpSpeedIncrease;
+            GetComponent<TextController>().powerUpSpeedText.text = "du fik en speed powerup";
+
+            // Starts a coroutine, which executes after 5 seconds, reducing the players speed again
+            StartCoroutine(ExecuteAfterTime((5), () =>
+            {
+                maxSpeed /= 2;
+                speed /= 2;
+                GetComponent<TextController>().powerUpSpeedText.text = "";
+            }));
+        }
+    }
+
+    // Handles player movement
+    void PlayerMovement()
     {
         // Gets horizontal/vertical input from player (WASD or arrows)
         float moveHorizontal = Input.GetAxis("Horizontal");
@@ -55,105 +192,49 @@ public class PlayerController : MonoBehaviour
         rb2d.AddForce(movement * speed);
 
         // Limits speed to maxSpeed.
-        if(rb2d.velocity.magnitude > maxSpeed)
+        if (rb2d.velocity.magnitude > maxSpeed)
         {
             rb2d.velocity = Vector3.ClampMagnitude(rb2d.velocity, maxSpeed);
         }
+        if(movement == new Vector2(0, 0))
+            rb2d.velocity = new Vector2(0,0);
     }
 
-    // Runs even if TimeScale = 0 (Game paused), checks if player wants to restart/close game when finished
-    void Update()
-    {
-        if(score >= winScore)
-            CheckGameEnded();
-    }
-
-    // Handles what happens when player collides with other objects
-    void OnTriggerEnter2D(Collider2D other)
-    {
-        if (other.gameObject.CompareTag("Mad"))
-        {
-            // Removes the object collided with (Mad)
-            //other.gameObject.SetActive(false);
-            Destroy(other.gameObject);
-
-            // Increments size of player
-            gameObject.transform.localScale += new Vector3(0.01f,0.01f,0f);
-            camera.orthographicSize += 0.02f;
-
-            score++;
-            SetScoreText();
-        }
-        else if (other.gameObject.CompareTag("PowerUp - Size"))
-        {
-            // Removes the object collided with (Power Up)
-            // other.gameObject.SetActive(false);
-            Destroy(other.gameObject);
-
-            // Temporarily increases the size of the player
-            gameObject.transform.localScale += powerUpSizeIncrease;
-            PowerUpSizeText.text = "du fik en size powerup";
-
-            // Starts a coroutine, which executes after 5 seconds, reducing the players size again
-            StartCoroutine(ExecuteAfterTime((5), () =>
-            {
-                gameObject.transform.localScale -= powerUpSizeIncrease;
-                PowerUpSizeText.text = "";
-            }));
-        }
-        else if (other.gameObject.CompareTag("PowerUp - Speed"))
-        {
-            // Removes the object collided with (Power Up)
-            //other.gameObject.SetActive(false);
-            Destroy(other.gameObject);
-
-            // Temporarily increases the speed of the player
-            maxSpeed *= powerUpSpeedIncrease;
-            speed *= powerUpSpeedIncrease;
-            PowerUpSpeedText.text = "du fik en speed powerup";
-
-            // Starts a coroutine, which executes after 5 seconds, reducing the players speed again
-            StartCoroutine(ExecuteAfterTime((5), () =>
-            {
-                maxSpeed /= 2;
-                speed /= 2;
-                PowerUpSpeedText.text = "";
-            }));
-        }
-    }
-
+    // Waits for (time) seconds before doing (task)
     IEnumerator ExecuteAfterTime(float time, Action task)
     {
-        // waits for (time) seconds before doing (task)
         yield return new WaitForSeconds(time);
         task();
     }
 
-    // Sets/updates the score text for the UI
-    void SetScoreText()
-    {
-        scoreText.text = "Score: " + score.ToString();
-        if (score == winScore)
-        {
-            winText.text = "Tillykke du har vundet!";
-            RestartText.text = "Tryk 'r' for at starte forfra\n" +
-                               "Tryk 'Esc' for at lukke";
-            Time.timeScale = 0;
-        }
-    }
 
-    void CheckGameEnded()
-    {
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            Time.timeScale = 1;
-            SceneManager.LoadScene("Main");
-        }
 
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            Time.timeScale = 1;
-            Application.Quit();
-        }
-    }
+
+    //GetComponent<TextController>().SetScoreText(score);
+    // Runs even if TimeScale = 0 (Game paused), checks if player wants to restart/close game when finished
+    /////////////////////////////////
+    // Doesnt work in multiplayer //
+    ////////////////////////////////
+    //void Update()
+    //{
+    //    if(score >= winScore)
+    //        CheckGameEnded();
+    //}
+
+    // Checks key input when game is over
+    // !!! Doesnt work in multiplayer !!!
+    //void CheckGameEnded()
+    //{
+    //    if (Input.GetKeyDown(KeyCode.R))
+    //    {
+    //        Time.timeScale = 1;
+    //        SceneManager.LoadScene("Main");
+    //    }
+
+    //    if (Input.GetKeyDown(KeyCode.Escape))
+    //    {
+    //        Time.timeScale = 1;
+    //        Application.Quit();
+    //    }
+    //}
 }

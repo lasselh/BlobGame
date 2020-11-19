@@ -4,12 +4,13 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using UnityEngine.UI;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 using UnityEngine.SocialPlatforms.Impl;
 using Random = UnityEngine.Random;
 
 
-public class SpawnController : MonoBehaviour
+public class SpawnController : NetworkBehaviour
 {
     public GameObject mad;
 
@@ -24,17 +25,19 @@ public class SpawnController : MonoBehaviour
         PowerUpList.Add(powerUpSpeed);
 
         // Spawns 50 Mad at random locations at the start of the game
-        for (int i = 0; i < 50; i++)
-        {
-            Instantiate(mad, new Vector3(Random.Range(-20.0f, 20.0f), Random.Range(-15.0f, 15.0f), 0), Quaternion.identity);
-        }
+        //for (int i = 0; i < 50; i++)
+        //{
+        //    GameObject ServerMad = Instantiate(mad, new Vector3(Random.Range(-20.0f, 20.0f), Random.Range(-15.0f, 15.0f), 0), Quaternion.identity);
+        //    NetworkServer.Spawn(ServerMad);
+        //}
+
         StartCoroutine(SpawnMadRandomly());
         StartCoroutine(SpawnPowerUpRandomly());
     }
 
     void Update()
     {
-        
+
     }
 
     // Spawns an amount of Mad at random locations on the map every x seconds
@@ -54,7 +57,8 @@ public class SpawnController : MonoBehaviour
                 // How much Mad it spawns at a time
                 for (int i = 0; i < 20; i++)
                 {
-                    Instantiate(mad, new Vector3(Random.Range(-20.0f, 20.0f), Random.Range(-15.0f, 15.0f), 0), Quaternion.identity);
+                    GameObject ServerMad = Instantiate(mad, new Vector3(Random.Range(-20.0f, 20.0f), Random.Range(-15.0f, 15.0f), 0), Quaternion.identity);
+                    NetworkServer.Spawn(ServerMad);
                 }
             }
         }
@@ -79,11 +83,12 @@ public class SpawnController : MonoBehaviour
                 // How many it spawns at a time (Currently between 1 and 3)
                 int r = Random.Range(1, 4);
                 // Which PowerUp to spawn from PowerUpList
-                int powerupran = Random.Range(0, 1);
+                int powerupran = Random.Range(0, 2);
 
                 for (int i = 0; i < r; i++)
                 {
-                    Instantiate(PowerUpList[powerupran], new Vector3(Random.Range(-20.0f, 20.0f), Random.Range(-15.0f, 15.0f), 0), Quaternion.identity);
+                    GameObject ServerPowerUp = Instantiate(PowerUpList[powerupran], new Vector3(Random.Range(-20.0f, 20.0f), Random.Range(-15.0f, 15.0f), 0), Quaternion.identity);
+                    NetworkServer.Spawn(ServerPowerUp);
                 }
             }
         }

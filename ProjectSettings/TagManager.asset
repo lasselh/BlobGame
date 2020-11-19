@@ -7,6 +7,9 @@ TagManager:
   - Mad
   - PowerUp - Size
   - PowerUp - Speed
+  - Camera
+  - Text
+  - PlayerBlob
   layers:
   - Default
   - TransparentFX
