@@ -43,11 +43,11 @@ public class SpawnController : NetworkBehaviour
             // How often it spawns Mad
             yield return new WaitForSeconds(5f);
 
-            GameObject[] AmountOfMadOnMap = GameObject.FindGameObjectsWithTag("Mad");
-            int MadCount = AmountOfMadOnMap.Length;
+            GameObject[] amountOfMadOnMap = GameObject.FindGameObjectsWithTag("Mad");
+            int madCount = amountOfMadOnMap.Length;
 
             // Max amount of Mad on map at a time
-            if (MadCount <= 250)
+            if (madCount <= 250)
             {
                 // How much Mad it spawns at a time
                 for (int i = 0; i < 20; i++)

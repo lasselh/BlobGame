@@ -16,7 +16,7 @@ public class TextController : NetworkBehaviour
     public Text powerUpSpeedText;
 
     // Private variables
-    private int winScore = 1000;
+    //private int winScore = 10000;
 
     // Start is called before the first frame update
     void Start()
@@ -38,12 +38,14 @@ public class TextController : NetworkBehaviour
     public void SetScoreText(int sco)
     {
         scoreText.text = "Score: " + sco.ToString();
-        if (sco == winScore)
-        {
-            winText.text = "Tillykke du har vundet!";
-            restartText.text = "Tryk 'r' for at starte forfra\n" +
-                               "Tryk 'Esc' for at lukke";
-            Time.timeScale = 0;
-        }
+
+        // Doesn't work in multiplayer
+        //if (sco == winScore)
+        //{
+        //    winText.text = "Tillykke du har vundet!";
+        //    restartText.text = "Tryk 'r' for at starte forfra\n" +
+        //                       "Tryk 'Esc' for at lukke";
+        //    Time.timeScale = 0;
+        //}
     }
 }

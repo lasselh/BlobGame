@@ -231,6 +231,21 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 709365031524387077}
     m_Modifications:
+    - target: {fileID: 463869522279543234, guid: 10c541c1fa4a7a346860fceacd58ef05,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 255.9
+      objectReference: {fileID: 0}
+    - target: {fileID: 463869522279543234, guid: 10c541c1fa4a7a346860fceacd58ef05,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 537321986343556218, guid: 10c541c1fa4a7a346860fceacd58ef05,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 225.90002
+      objectReference: {fileID: 0}
     - target: {fileID: 844653438012576835, guid: 10c541c1fa4a7a346860fceacd58ef05,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -341,6 +356,33 @@ PrefabInstance:
       propertyPath: m_Name
       value: Canvas
       objectReference: {fileID: 0}
+    - target: {fileID: 3273333160852895447, guid: 10c541c1fa4a7a346860fceacd58ef05,
+        type: 3}
+      propertyPath: m_FontData.m_FontSize
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 3273333160852895447, guid: 10c541c1fa4a7a346860fceacd58ef05,
+        type: 3}
+      propertyPath: m_Text
+      value: 'Tillykke!
+
+        Du har vundet!'
+      objectReference: {fileID: 0}
+    - target: {fileID: 3273333160852895447, guid: 10c541c1fa4a7a346860fceacd58ef05,
+        type: 3}
+      propertyPath: m_FontData.m_AlignByGeometry
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3289751985329014125, guid: 10c541c1fa4a7a346860fceacd58ef05,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 80.645
+      objectReference: {fileID: 0}
+    - target: {fileID: 3289751985329014125, guid: 10c541c1fa4a7a346860fceacd58ef05,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3703999485323636879, guid: 10c541c1fa4a7a346860fceacd58ef05,
         type: 3}
       propertyPath: m_AssetId.i0
@@ -420,6 +462,41 @@ PrefabInstance:
         type: 3}
       propertyPath: m_AssetId.i15
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4432903417441823900, guid: 10c541c1fa4a7a346860fceacd58ef05,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 164.41
+      objectReference: {fileID: 0}
+    - target: {fileID: 4432903417441823900, guid: 10c541c1fa4a7a346860fceacd58ef05,
+        type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 92.97229
+      objectReference: {fileID: 0}
+    - target: {fileID: 4432903417441823900, guid: 10c541c1fa4a7a346860fceacd58ef05,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0.000011921
+      objectReference: {fileID: 0}
+    - target: {fileID: 4432903417441823900, guid: 10c541c1fa4a7a346860fceacd58ef05,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 379.99084
+      objectReference: {fileID: 0}
+    - target: {fileID: 5216299963139504578, guid: 10c541c1fa4a7a346860fceacd58ef05,
+        type: 3}
+      propertyPath: m_Text
+      value: Power up - Speed
+      objectReference: {fileID: 0}
+    - target: {fileID: 6264153543624445608, guid: 10c541c1fa4a7a346860fceacd58ef05,
+        type: 3}
+      propertyPath: m_Text
+      value: Rstart test123
+      objectReference: {fileID: 0}
+    - target: {fileID: 6996898833855234614, guid: 10c541c1fa4a7a346860fceacd58ef05,
+        type: 3}
+      propertyPath: m_Text
+      value: Power up - Size
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 3703999485323636879, guid: 10c541c1fa4a7a346860fceacd58ef05, type: 3}
