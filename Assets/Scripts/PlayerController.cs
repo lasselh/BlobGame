@@ -20,7 +20,7 @@ public class PlayerController : NetworkBehaviour
     // Private variables
     private Rigidbody2D rb2d;
     private int score;
-    private PlayerData _playerData;
+    private Player _player;
 
     // Power up variables
     // Power up - Size
@@ -35,9 +35,19 @@ public class PlayerController : NetworkBehaviour
 
         StartCoroutine(CheckIfWon());
 
-        _playerData = new PlayerData();
-        _playerData.Name = "Lasse";
-        StartCoroutine(Download(_playerData.Name, result => {
+        _player = new Player();
+        _player._id = "1";
+        _player.Name = "Mikkel";
+        _player.Wins = 11;
+        _player.Password = "123456";
+
+        //StartCoroutine(Download(_player.Name, result =>
+        //{
+        //    Debug.Log(result);
+        //}));
+
+        StartCoroutine(Upload(JsonUtility.ToJson(_player), result =>
+        {
             Debug.Log(result);
         }));
     }
@@ -204,9 +214,9 @@ public class PlayerController : NetworkBehaviour
                 GetComponent<TextController>().winText.text = "Tillykke!\n" +
                                                               "Du har vundet!";
 
-                StartCoroutine(Upload(_playerData.Stringify(), result => {
-                    Debug.Log(result);
-                }));
+                //StartCoroutine(Upload(_playerData.Stringify(), result => {
+                //    Debug.Log(result);
+                //}));
             }
             else
             {
@@ -222,9 +232,9 @@ public class PlayerController : NetworkBehaviour
         task();
     }
 
-    IEnumerator Download(string id, System.Action<PlayerData> callback = null)
+    IEnumerator Download(string id, System.Action<Player> callback = null)
     {
-        using (UnityWebRequest request = UnityWebRequest.Get("http://localhost:27017/MongoCoronaDb/" + id))
+        using (UnityWebRequest request = UnityWebRequest.Get("https://webhooks.mongodb-realm.com/api/client/v2.0/app/blob-pcwiq/service/BlobService/incoming_webhook/getPlayers"))
         {
             yield return request.SendWebRequest();
             if (request.isNetworkError || request.isHttpError)
@@ -239,7 +249,17 @@ public class PlayerController : NetworkBehaviour
             {
                 if (callback != null)
                 {
-                    callback.Invoke(PlayerData.Parse(request.downloadHandler.text));
+
+                    Debug.Log(request.downloadHandler.text);
+
+                    //Player test = JsonUtility.FromJson<Player>(request.downloadHandler.text);
+
+                    Player test123 = new Player()
+                    {
+                        Name = "Mathias",
+                        Wins = 0,
+                        Password = "1234"
+                    };
                 }
             }
         }
@@ -247,7 +267,7 @@ public class PlayerController : NetworkBehaviour
 
     IEnumerator Upload(string profile, System.Action<bool> callback = null)
     {
-        using (UnityWebRequest request = new UnityWebRequest("http://localhost:27017/MongoCoronaDb/", "POST"))
+        using (UnityWebRequest request = UnityWebRequest.Post("https://webhooks.mongodb-realm.com/api/client/v2.0/app/blob-pcwiq/service/BlobService/incoming_webhook/addPlayers", "POST"))
         {
             request.SetRequestHeader("Content-Type", "application/json");
             byte[] bodyRaw = Encoding.UTF8.GetBytes(profile);
