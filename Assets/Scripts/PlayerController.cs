@@ -20,7 +20,7 @@ public class PlayerController : NetworkBehaviour
     // Private variables
     private Rigidbody2D rb2d;
     private int score;
-    private Player _player;
+    private DatabaseAccess databaseAccess;
 
     // Power up variables
     // Power up - Size
@@ -33,28 +33,14 @@ public class PlayerController : NetworkBehaviour
     {
         rb2d = GetComponent<Rigidbody2D>();
 
-        StartCoroutine(CheckIfWon());
-
-        _player = new Player();
-        _player._id = "1";
-        _player.Name = "Mikkel";
-        _player.Wins = 11;
-        _player.Password = "123456";
-
-        //StartCoroutine(Download(_player.Name, result =>
-        //{
-        //    Debug.Log(result);
-        //}));
-
-        StartCoroutine(Upload(JsonUtility.ToJson(_player), result =>
-        {
-            Debug.Log(result);
-        }));
+        // Access to singleton database
+        databaseAccess = GameObject.FindGameObjectWithTag("DatabaseAccess").GetComponent<DatabaseAccess>();
     }
 
     // FixedUpdate is called exactly 50 times a second, used for physics (movement)
     void FixedUpdate()
     {
+        // Used to ensure a player can ONLY move their own player object
         if (!isLocalPlayer)
         {
             return;
@@ -62,7 +48,7 @@ public class PlayerController : NetworkBehaviour
         PlayerMovement();
     }
 
-    // Handles what happens when player collides with other objects (Mad, PowerUps, walls, etc...)
+    // Handles what happens when player collides with other non-player objects (Mad, PowerUps, walls, etc...)
     void OnTriggerEnter2D(Collider2D other)
     {
         if (!isLocalPlayer)
@@ -70,9 +56,9 @@ public class PlayerController : NetworkBehaviour
             return;
         }
 
-        // Updates UI (Score, PowerUp text) - Applies on the client only
+        // Updates UI (Score, PowerUp text etc.) - Applies on this client only
         Collision(other.gameObject);
-        // Updates size - Makes RPC call, applies on all clients
+        // Updates size of this object - Makes RPC call, applies on all clients
         CmdCollision(other.gameObject);
     }
 
@@ -87,35 +73,40 @@ public class PlayerController : NetworkBehaviour
             // Updates UI (score)
             score += 10;
             GetComponent<TextController>().SetScoreText(score);
+
             // Sends command to server about collision, updating for all other clients
             CmdPlayerCollision(other.gameObject);
+
+            // After 1 second, this client checks if it has won. 
+            Invoke("CheckIfWon", 1);
         }
     }
 
-    // Sends a command from player objects on the client to player objects on the server about player collision
+    // Sends a command from player objects on the client to player objects on the server about player collisions
     [Command]
     void CmdPlayerCollision(GameObject other)
     {
         RpcPlayerCollision(other);
     }
-    // Sends a ClientRpc from player objects on the server to player objects on the client about player collision
+    // Sends a ClientRpc from player objects on the server to player objects on the client about player collisions
     // Updates involved player objects for all player clients (Removes losing player, increases size of winning player etc.)
     [ClientRpc]
     void RpcPlayerCollision(GameObject other)
     {
         // Server handles destruction of other player, updating on all other clients
-        Destroy(other);
-        Destroy(other.GetComponent<TextMesh>());
+        Destroy(other.gameObject);
+        Destroy(other.gameObject.GetComponent<TextMesh>());
+
         gameObject.transform.localScale += new Vector3(0.1f, 0.1f, 0f);
     }
 
-    // Sends a command from player objects on the client to player objects on the server about collision
+    // Sends a command from player objects on the client to player objects on the server about non-player collisions
     [Command]
     void CmdCollision(GameObject other)
     {
         RpcCollision(other);
     }
-    // Sends a ClientRpc from player objects on the server to player objects on the client about collision - updating invovled objects for all players
+    // Sends a ClientRpc from player objects on the server to player objects on the client about non-player collisions - updating invovled objects for all players
     // Updates involved objects for all player clients (Removes mad from map, increases size of relevant player etc.)
     [ClientRpc]
     void RpcCollision(GameObject other)
@@ -157,22 +148,22 @@ public class PlayerController : NetworkBehaviour
         }
         else if (other.gameObject.CompareTag("PowerUp - Size"))
         {
-            GetComponent<TextController>().powerUpSizeText.text = "du fik en size powerup";
+            GetComponent<TextController>().SetPowerUpSizeText();
 
-            // Starts a coroutine, which executes after 5 seconds, removing text
+            // Starts a coroutine, which executes after 5 seconds, removing text along with effect
             StartCoroutine(ExecuteAfterTime((5), () =>
             {
-                GetComponent<TextController>().powerUpSizeText.text = "";
+                GetComponent<TextController>().RemovePowerUpSizeText();
             }));
         }
         else if (other.gameObject.CompareTag("PowerUp - Speed"))
         {
-            GetComponent<TextController>().powerUpSpeedText.text = "du fik en speed powerup";
+            GetComponent<TextController>().SetPowerUpSpeedText();
 
-            // Starts a coroutine, which executes after 5 seconds, removing text
+            // Starts a coroutine, which executes after 5 seconds, removing text along with effect
             StartCoroutine(ExecuteAfterTime((5), () =>
             {
-                GetComponent<TextController>().powerUpSpeedText.text = "";
+                GetComponent<TextController>().RemovePowerUpSpeedText();
             }));
         }
     }
@@ -199,29 +190,26 @@ public class PlayerController : NetworkBehaviour
             rb2d.velocity = new Vector2(0, 0);
     }
 
-    // Checks if player is the only one alive every second
-    IEnumerator CheckIfWon()
+    // Checks if player is the only one alive
+    void CheckIfWon()
     {
-        while (true)
+        GameObject[] amountOfPlayers = GameObject.FindGameObjectsWithTag("Player");
+        int playerCount = amountOfPlayers.Length;
+
+        if (playerCount == 1)
         {
-            yield return new WaitForSeconds(1f);
+            // Updates players wins in database
+            Player thisPlayer = databaseAccess.GetOnePlayerFromDatabase(this.gameObject.transform.name);
+            thisPlayer.Wins++;
+            databaseAccess.UpdatePlayerInDatabase(this.gameObject.transform.name, thisPlayer);
 
-            GameObject[] amountOfPlayers = GameObject.FindGameObjectsWithTag("Player");
-            int playerCount = amountOfPlayers.Length;
-
-            if (playerCount == 1)
-            {
-                GetComponent<TextController>().winText.text = "Tillykke!\n" +
-                                                              "Du har vundet!";
-
-                //StartCoroutine(Upload(_playerData.Stringify(), result => {
-                //    Debug.Log(result);
-                //}));
-            }
-            else
-            {
-                GetComponent<TextController>().winText.text = "";
-            }
+            GetComponent<TextController>().SetPlayerWonGameText();
+            GetComponent<TextController>().DisplayHighscoreList();
+            GetComponent<TextController>().SetAmountOfWinsText();
+        }
+        else
+        {
+            // do nothing
         }
     }
 
@@ -231,96 +219,4 @@ public class PlayerController : NetworkBehaviour
         yield return new WaitForSeconds(time);
         task();
     }
-
-    IEnumerator Download(string id, System.Action<Player> callback = null)
-    {
-        using (UnityWebRequest request = UnityWebRequest.Get("https://webhooks.mongodb-realm.com/api/client/v2.0/app/blob-pcwiq/service/BlobService/incoming_webhook/getPlayers"))
-        {
-            yield return request.SendWebRequest();
-            if (request.isNetworkError || request.isHttpError)
-            {
-                Debug.Log(request.error);
-                if (callback != null)
-                {
-                    callback.Invoke(null);
-                }
-            }
-            else
-            {
-                if (callback != null)
-                {
-
-                    Debug.Log(request.downloadHandler.text);
-
-                    //Player test = JsonUtility.FromJson<Player>(request.downloadHandler.text);
-
-                    Player test123 = new Player()
-                    {
-                        Name = "Mathias",
-                        Wins = 0,
-                        Password = "1234"
-                    };
-                }
-            }
-        }
-    }
-
-    IEnumerator Upload(string profile, System.Action<bool> callback = null)
-    {
-        using (UnityWebRequest request = UnityWebRequest.Post("https://webhooks.mongodb-realm.com/api/client/v2.0/app/blob-pcwiq/service/BlobService/incoming_webhook/addPlayers", "POST"))
-        {
-            request.SetRequestHeader("Content-Type", "application/json");
-            byte[] bodyRaw = Encoding.UTF8.GetBytes(profile);
-            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
-            request.downloadHandler = new DownloadHandlerBuffer();
-            yield return request.SendWebRequest();
-            if (request.isNetworkError || request.isHttpError)
-            {
-                Debug.Log(request.error);
-                if (callback != null)
-                {
-                    callback.Invoke(false);
-                }
-            }
-            else
-            {
-                if (callback != null)
-                {
-                    callback.Invoke(request.downloadHandler.text != "{}");
-                }
-            }
-        }
-    }
-
-    //// Runs even if TimeScale = 0 (Game paused), checks if player wants to restart/close game when finished
-    ///////////////////////////////////
-    //// Doesn't work in multiplayer //
-    ///////////////////////////////////
-    //void Update()
-    //{
-    //    if (!isLocalPlayer)
-    //    {
-    //        return;
-    //    }
-    //    if (score >= 0)
-    //        CheckGameEnded();
-    //}
-
-    ////Checks key input when game is over
-    //// Doesn't work in multiplayer //
-    //void CheckGameEnded()
-    //{
-    //    if (Input.GetKeyDown(KeyCode.R))
-    //    {
-    //        Time.timeScale = 1;
-    //        SceneManager.LoadScene("Main");
-    //    }
-
-    //    if (Input.GetKeyDown(KeyCode.Escape))
-    //    {
-    //        Time.timeScale = 1;
-    //        Application.Quit();
-    //    }
-    //    }
-    //}
 }

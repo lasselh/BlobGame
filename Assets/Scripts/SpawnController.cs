@@ -31,6 +31,7 @@ public class SpawnController : NetworkBehaviour
         //    NetworkServer.Spawn(ServerMad);
         //}
 
+        // Starts coroutines spawning Mad/PowerUps randomly
         StartCoroutine(SpawnMadRandomly());
         StartCoroutine(SpawnPowerUpRandomly());
     }
@@ -43,6 +44,7 @@ public class SpawnController : NetworkBehaviour
             // How often it spawns Mad
             yield return new WaitForSeconds(5f);
 
+            // Gets amount of Mad currently on map
             GameObject[] amountOfMadOnMap = GameObject.FindGameObjectsWithTag("Mad");
             int madCount = amountOfMadOnMap.Length;
 
