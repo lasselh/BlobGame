@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 using System;
+using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 public class CameraController : NetworkBehaviour
@@ -14,14 +15,17 @@ public class CameraController : NetworkBehaviour
     private DatabaseAccess databaseAccess;
     private Player player;
     private TextMesh tm;
-    private string setPlayerName = "Lasse";
-
-    // Used to check if player name has been set and is ready to be shown
-    private bool isReady = false;
+    public TextMesh playerNameTextMesh;
 
     // Start is called before the first frame update
     void Start()
     {
+        if(!isLocalPlayer)
+        {
+            return;
+        }
+
+        player = new Player();
         mainCamera = Camera.main;
         offset = mainCamera.transform.position - this.transform.position;
         playerName = new GameObject("player_label");
@@ -30,7 +34,18 @@ public class CameraController : NetworkBehaviour
         // Access to singleton database
         databaseAccess = GameObject.FindGameObjectWithTag("DatabaseAccess").GetComponent<DatabaseAccess>();
 
-        CmdSetPlayerName();
+        // Gets a random player in the database
+        int count = (int)databaseAccess.GetCountInDatabase();
+        int rand = Random.Range(0, count);
+        player = databaseAccess.GetRandomPlayerInDatabase(rand);
+        this.gameObject.name = player.Name;
+    }
+
+    void Update()
+    {
+        this.transform.Find("LabelHolder").rotation = Quaternion.identity;
+
+        //this.gameObject.name = GetComponent<TextController>().usernameText.text;
     }
 
     // Update is called late once per frame
@@ -44,12 +59,36 @@ public class CameraController : NetworkBehaviour
         // Moves camera with player
         mainCamera.transform.position = this.transform.position + offset;
 
-        // Updates the player name above each player for all clients every frame
-        if (isReady == true)
-        {
-            CmdUpdatePlayerName();
-        }
+        CmdUpNames(this.gameObject.name);
     }
+
+    // Zooms camera out slightly
+    public void CameraZoomOnSizeIncrease()
+    {
+        this.mainCamera.orthographicSize += 0.015f;
+    }
+
+
+
+    [Command]
+    void CmdUpNames(string name)
+    {
+        RpcUpNames(name);
+    }
+    [ClientRpc]
+    void RpcUpNames(string name)
+    {
+        this.gameObject.name = name;
+        this.gameObject.transform.Find("LabelHolder/Label").GetComponent<TextMesh>().text = name;
+    }
+
+
+
+
+
+
+
+
 
     // Destroys player name label when player object is destroyed (dies or leaves)
     // Necessary since playerName is technically a different GameObject and is therefor not destroyed on player object destroy
@@ -60,28 +99,23 @@ public class CameraController : NetworkBehaviour
 
     // Command/RPC calls to update all player names location on all clients
     [Command]
-    void CmdUpdatePlayerName()
+    public void CmdUpdatePlayerName(string name)
     {
-        RpcUpdatePlayerName();
+        //RpcUpdatePlayerName(name);
     }
     [ClientRpc]
-    void RpcUpdatePlayerName()
+    void RpcUpdatePlayerName(string name)
     {
+        playerNameTextMesh.text = name;
         // Name label scales with players size
-        SetPlayerName();
+        //SetPlayerName();
     }
 
-    // Zooms camera out slightly
-    public void CameraZoomOnSizeIncrease()
-    {
-        this.mainCamera.orthographicSize += 0.015f;
-    }
 
     // Sets the players name
     public void SetPlayerName()
     {
-        this.transform.name = setPlayerName;
-        tm.text = setPlayerName;
+        tm.text = player.Name;
 
         //playerName.transform.rotation = Camera.main.transform.rotation; // Causes the text to face the camera
 
@@ -103,25 +137,26 @@ public class CameraController : NetworkBehaviour
         //int rand = Random.Range(0, count);
         //Player player = databaseAccess.GetRandomPlayerInDatabase(rand);
 
-        player = databaseAccess.GetOnePlayerFromDatabase(setPlayerName);
+        player = databaseAccess.GetOnePlayerFromDatabase(this.GetComponent<TextController>().usernameText.text);
 
-        this.transform.name = player.Name;
+        //this.gameObject.transform.name = player.Name;
 
         tm.color = new Color(Random.Range(0.00f, 1f), Random.Range(0.00f, 1f), Random.Range(0.00f, 1f));
 
+        // Fucker helt op hvis man er host af en eller anden grund?
         //this.GetComponent<TextController>().SetAmountOfWinsText();
-        isReady = true;
+        //isReady = true;
     }
 
     // Command/RPC calls to update all player names location on all clients
     [Command]
-    void CmdSetPlayerName()
+    public void CmdSetPlayerName()
     {
-        RpcSetPlayerName();
+        //RpcSetPlayerName();
     }
     [ClientRpc]
     void RpcSetPlayerName()
     {
-        GetPlayerName();
+        //GetPlayerName();
     }
 }

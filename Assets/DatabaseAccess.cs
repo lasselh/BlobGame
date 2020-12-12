@@ -54,7 +54,7 @@ public class DatabaseAccess : MonoBehaviour
     {
         Player player = new Player();
 
-        player = collection.Find<Player>(p => p.Name == name).SingleOrDefault();
+        player = collection.Find<Player>(p => p.Name == name).FirstOrDefault();
 
         return player;
     }

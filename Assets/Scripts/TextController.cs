@@ -5,6 +5,7 @@ using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 using UnityEngine.SocialPlatforms.Impl;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class TextController : NetworkBehaviour
 {
@@ -103,5 +104,4 @@ public class TextController : NetworkBehaviour
     {
         powerUpSpeedText.text = "";
     }
-
 }
