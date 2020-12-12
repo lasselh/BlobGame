@@ -26,7 +26,7 @@ public class PlayerController : NetworkBehaviour
     // Power up - Size
     private Vector3 powerUpSizeIncrease = new Vector3(0.1f, 0.1f, 0);
     // Power up - Speed
-    private float powerUpSpeedIncrease = 2;
+    private float powerUpSpeedIncrease = 2f;
 
     // Called once when script starts
     void Start()
@@ -35,6 +35,8 @@ public class PlayerController : NetworkBehaviour
 
         // Access to singleton database
         databaseAccess = GameObject.FindGameObjectWithTag("DatabaseAccess").GetComponent<DatabaseAccess>();
+
+        //Time.timeScale = 0;
     }
 
     // FixedUpdate is called exactly 50 times a second, used for physics (movement)
@@ -219,4 +221,24 @@ public class PlayerController : NetworkBehaviour
         yield return new WaitForSeconds(time);
         task();
     }
+
+    //[Command]
+    //void CmdStartGame()
+    //{
+    //    RpcStartGame();
+    //}
+    //[ClientRpc]
+    //void RpcStartGame()
+    //{
+    //    this.GetComponent<CameraController>().SetPlayerName();
+    //    Time.timeScale = 1;
+    //}
+
+    //void Update()
+    //{
+    //    if (Input.GetKeyDown(KeyCode.F))
+    //    {
+    //        CmdStartGame();
+    //    }
+    //}
 }

@@ -16,6 +16,7 @@ public class TextController : NetworkBehaviour
     public Text powerUpSpeedText;
     public Text highscoreListText;
     public Text winsText;
+    public InputField usernameText;
 
     // Private variables
     //private int winScore = 10000;
@@ -44,9 +45,6 @@ public class TextController : NetworkBehaviour
         databaseAccess = GameObject.FindGameObjectWithTag("DatabaseAccess").GetComponent<DatabaseAccess>();
 
         DisplayHighscoreList();
-
-        // Invokes function after 1 second, giving time to get user from database and add to player object before executing
-        Invoke("SetAmountOfWinsText", 1f);
     }
 
     // Sets score text and win-/restartText when game is finished
