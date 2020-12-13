@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.SocialPlatforms.Impl;
 using UnityEngine;
 using UnityEngine.Events;
+using TMPro;
 
 public class TextController : NetworkBehaviour
 {
@@ -17,7 +18,7 @@ public class TextController : NetworkBehaviour
     public Text powerUpSpeedText;
     public Text highscoreListText;
     public Text winsText;
-    public InputField usernameText;
+    public Button submitButton;
 
     // Private variables
     //private int winScore = 10000;
@@ -46,6 +47,7 @@ public class TextController : NetworkBehaviour
         databaseAccess = GameObject.FindGameObjectWithTag("DatabaseAccess").GetComponent<DatabaseAccess>();
 
         DisplayHighscoreList();
+
     }
 
     // Sets score text and win-/restartText when game is finished
