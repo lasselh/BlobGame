@@ -5,8 +5,10 @@ using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 using UnityEngine.SocialPlatforms.Impl;
 using UnityEngine;
+using System;
 using UnityEngine.Events;
 using TMPro;
+using Random = UnityEngine.Random;
 
 public class TextController : NetworkBehaviour
 {
@@ -17,11 +19,9 @@ public class TextController : NetworkBehaviour
     public Text powerUpSizeText;
     public Text powerUpSpeedText;
     public Text highscoreListText;
-    public Text winsText;
-    public Button submitButton;
+    public Text amountOfWinsText;
 
     // Private variables
-    //private int winScore = 10000;
     private DatabaseAccess databaseAccess;
 
     // Start is called before the first frame update
@@ -33,7 +33,7 @@ public class TextController : NetworkBehaviour
         powerUpSpeedText.text = "";
         winText.text = "";
         restartText.text = "";
-        winsText.text = "";
+        amountOfWinsText.text = "";
         highscoreListText.text = "";
 
         if (!isLocalPlayer)
@@ -41,13 +41,21 @@ public class TextController : NetworkBehaviour
             return;
         }
 
-        SetScoreText(0);
-
         // Access to singleton database
         databaseAccess = GameObject.FindGameObjectWithTag("DatabaseAccess").GetComponent<DatabaseAccess>();
 
+        SetScoreText(0);
         DisplayHighscoreList();
 
+        this.gameObject.transform.Find("LabelHolder/Label").GetComponent<TextMesh>().color = 
+            new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
+
+        CmdUpdateNames(PlayerPrefs.GetString("name"));
+    }
+
+    void LateUpdate()
+    {
+        StartCoroutine(UpdateNames());
     }
 
     // Sets score text and win-/restartText when game is finished
@@ -78,7 +86,7 @@ public class TextController : NetworkBehaviour
     public void SetAmountOfWinsText()
     {
         Player player = databaseAccess.GetOnePlayerFromDatabase(this.gameObject.transform.name);
-        winsText.text = $"Wins: {player.Wins}";
+        amountOfWinsText.text = $"Wins: {player.Wins}";
     }
 
     // Sets the text when a player has won
@@ -89,7 +97,7 @@ public class TextController : NetworkBehaviour
 
     public void SetPowerUpSizeText()
     {
-        powerUpSizeText.text = "du fik en size powerup";
+        powerUpSizeText.text = "Du fik en size powerup";
     }
 
     public void RemovePowerUpSizeText()
@@ -99,11 +107,31 @@ public class TextController : NetworkBehaviour
 
     public void SetPowerUpSpeedText()
     {
-        powerUpSpeedText.text = "du fik en speed powerup";
+        powerUpSpeedText.text = "Du fik en speed powerup";
     }
 
     public void RemovePowerUpSpeedText()
     {
         powerUpSpeedText.text = "";
+    }
+
+    // Calls the command to update player names - used to start coroutine to update names
+    IEnumerator UpdateNames()
+    {
+        yield return new WaitForSeconds(1);
+        CmdUpdateNames(this.gameObject.name);
+    }
+
+    // Command/RPC call to update player names for all players.
+    [Command]
+    public void CmdUpdateNames(string name)
+    {
+        RpcUpdateNames(name);
+    }
+    [ClientRpc]
+    void RpcUpdateNames(string name)
+    {
+        this.gameObject.name = name;
+        this.gameObject.transform.Find("LabelHolder/Label").GetComponent<TextMesh>().text = name;
     }
 }

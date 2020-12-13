@@ -79,7 +79,7 @@ public class PlayerController : NetworkBehaviour
             // Sends command to server about collision, updating for all other clients
             CmdPlayerCollision(other.gameObject);
 
-            // After 1 second, this client checks if it has won. 
+            // After 1 second (giving server time to react), this client checks if it has won. 
             Invoke("CheckIfWon", 1);
         }
     }
@@ -200,7 +200,7 @@ public class PlayerController : NetworkBehaviour
 
         if (playerCount == 1)
         {
-            // Updates players wins in database
+            // Updates player wins in database
             Player thisPlayer = databaseAccess.GetOnePlayerFromDatabase(this.gameObject.transform.name);
             thisPlayer.Wins++;
             databaseAccess.UpdatePlayerInDatabase(this.gameObject.transform.name, thisPlayer);
@@ -221,24 +221,4 @@ public class PlayerController : NetworkBehaviour
         yield return new WaitForSeconds(time);
         task();
     }
-
-    //[Command]
-    //void CmdStartGame()
-    //{
-    //    RpcStartGame();
-    //}
-    //[ClientRpc]
-    //void RpcStartGame()
-    //{
-    //    this.GetComponent<CameraController>().SetPlayerName();
-    //    Time.timeScale = 1;
-    //}
-
-    //void Update()
-    //{
-    //    if (Input.GetKeyDown(KeyCode.F))
-    //    {
-    //        CmdStartGame();
-    //    }
-    //}
 }
