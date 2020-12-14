@@ -54,7 +54,7 @@ public class DatabaseAccess : MonoBehaviour
     {
         Player player = new Player();
 
-        player = collection.Find<Player>(p => p.Name == name).FirstOrDefault();
+        player = collection.Find<Player>(p => p.Name == name).SingleOrDefault();
 
         return player;
     }
@@ -78,6 +78,11 @@ public class DatabaseAccess : MonoBehaviour
     public Player GetRandomPlayerInDatabase(int count)
     {
         return collection.Find<Player>(p => true).Limit(-1).Skip(count).FirstOrDefault();
+    }
+
+    public List<Player> SortedPlayers()
+    {
+        return collection.Find<Player>(p => true).SortByDescending(p => p.Wins).Limit(10).ToList();
     }
 
 

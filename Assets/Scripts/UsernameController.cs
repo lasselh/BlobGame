@@ -8,6 +8,7 @@ public class UsernameController : MonoBehaviour
 {
     public InputField unText;
     public Button submit;
+    private DatabaseAccess databaseAccess;
 
     // Start is called before the first frame update
     void Start()

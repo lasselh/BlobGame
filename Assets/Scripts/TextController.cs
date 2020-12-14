@@ -20,6 +20,7 @@ public class TextController : NetworkBehaviour
     public Text powerUpSpeedText;
     public Text highscoreListText;
     public Text amountOfWinsText;
+    Player p;
 
     // Private variables
     private DatabaseAccess databaseAccess;
@@ -44,13 +45,26 @@ public class TextController : NetworkBehaviour
         // Access to singleton database
         databaseAccess = GameObject.FindGameObjectWithTag("DatabaseAccess").GetComponent<DatabaseAccess>();
 
-        SetScoreText(0);
-        DisplayHighscoreList();
-
         this.gameObject.transform.Find("LabelHolder/Label").GetComponent<TextMesh>().color = 
             new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
 
-        CmdUpdateNames(PlayerPrefs.GetString("name"));
+        // Gets player from database
+        p = databaseAccess.GetOnePlayerFromDatabase(PlayerPrefs.GetString("name"));
+
+        // If player isn't in database, add as new player
+        if(p == null)
+        {
+            p = new Player();
+
+            databaseAccess.SaveToDatabase(PlayerPrefs.GetString("name"), 0);
+            p.Name = PlayerPrefs.GetString("name");
+            p.Wins = 0;
+        }
+
+        SetScoreText(0);
+        DisplayHighscoreList();
+
+        CmdUpdateNames(p.Name);
     }
 
     void LateUpdate()
@@ -67,19 +81,21 @@ public class TextController : NetworkBehaviour
     // Displays the highscore list
     public void DisplayHighscoreList()
     {
+        int placeNr = 1;
         highscoreListText.text = "Highscore list:";
 
-        List<Player> players = databaseAccess.GetPlayersFromDatabase();
+        List<Player> players = databaseAccess.SortedPlayers();
         foreach (var player in players)
         {
-            SetHighscoreText(player.Name, player.Wins);
+            SetHighscoreText(placeNr, player.Name, player.Wins);
+            placeNr++;
         }
     }
 
     // Sets name+wins of a player
-    public void SetHighscoreText(string name, int wins)
+    public void SetHighscoreText(int placeNr, string name, int wins)
     {
-        highscoreListText.text += $"\n{name}: {wins}";
+        highscoreListText.text += $"\n{placeNr}. {name}: {wins}";
     }
 
     // Sets amount of wins of current player
