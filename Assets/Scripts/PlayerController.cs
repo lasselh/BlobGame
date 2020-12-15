@@ -36,8 +36,6 @@ public class PlayerController : NetworkBehaviour
 
         // Access to singleton database
         databaseAccess = GameObject.FindGameObjectWithTag("DatabaseAccess").GetComponent<DatabaseAccess>();
-
-        //Time.timeScale = 0;
     }
 
     // FixedUpdate is called exactly 50 times a second, used for physics (movement)
@@ -96,7 +94,6 @@ public class PlayerController : NetworkBehaviour
     [ClientRpc]
     void RpcPlayerCollision(GameObject other)
     {
-        // Server handles destruction of other player, updating on all other clients
         Destroy(other.gameObject);
         Destroy(other.gameObject.GetComponent<TextMesh>());
 
