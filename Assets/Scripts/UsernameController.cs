@@ -13,10 +13,10 @@ public class UsernameController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        submit.onClick.AddListener(UsernameUp);
+        submit.onClick.AddListener(LoginUser);
     }
 
-    void UsernameUp()
+    void LoginUser()
     {
         PlayerPrefs.SetString("name", unText.text);
         SceneManager.LoadScene("Main");
