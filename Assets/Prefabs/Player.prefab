@@ -17,7 +17,6 @@ GameObject:
   - component: {fileID: 8633314614196744193}
   - component: {fileID: 7107763990606167741}
   - component: {fileID: 5189724250141728853}
-  - component: {fileID: 4541692297489994638}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -234,14 +233,6 @@ MonoBehaviour:
   m_SnapThreshold: 5
   m_InterpolateRotation: 1
   m_InterpolateMovement: 1
---- !u!222 &4541692297489994638
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 709365031524387097}
-  m_CullTransparentMesh: 0
 --- !u!1001 &5561095882371988508
 PrefabInstance:
   m_ObjectHideFlags: 0
