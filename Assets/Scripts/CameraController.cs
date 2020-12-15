@@ -21,7 +21,7 @@ public class CameraController : NetworkBehaviour
         }
 
         mainCamera = Camera.main;
-        offset = mainCamera.transform.position - this.transform.position;
+        offset = mainCamera.transform.position;
     }
 
     void Update()

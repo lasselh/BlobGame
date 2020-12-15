@@ -31,6 +31,7 @@ public class PlayerController : NetworkBehaviour
     // Called once when script starts
     void Start()
     {
+        this.gameObject.transform.position = new Vector2(Random.Range(-20.0f, 20.0f), Random.Range(-15.0f, 15.0f));
         rb2d = GetComponent<Rigidbody2D>();
 
         // Access to singleton database
